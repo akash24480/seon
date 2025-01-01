@@ -113,15 +113,3 @@ export const getProjectById = async ({projectId}) => {
     return project
 }
 
-// Duplicate data
-export const removeUsersFromProject = async ({projectId, users, userId}) => {
-
-    if(!projectId){
-        throw new Error('Project Id is required')
-    }
-
-    if(!mongoose.Types.ObjectId.isValid(projectId)){
-        throw new Error('Project id is invalid')
-    }
-
-}

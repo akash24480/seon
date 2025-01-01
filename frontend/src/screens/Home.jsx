@@ -1,13 +1,18 @@
-import React,{useContext, useState} from 'react'
+import React,{useContext, useState,useEffect} from 'react'
 import { UserContext } from '../context/user.context'
 import 'remixicon/fonts/remixicon.css'
 import axios from '../config/axios'
+import {useNavigate} from 'react-router-dom'
 
 
 const Home = () => {
   const {user} = useContext(UserContext)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [projectName, setProjectName] = useState(null)
+  const [projects, setprojects] = useState([])
+
+
+  const navigate = useNavigate()
 
 
 
@@ -32,14 +37,40 @@ axios.post('/projects/create', {
 
 }
 
+useEffect(()=>{
+  axios.get('/projects/all')
+  .then((res)=>{
+    console.log(res.data)
+    setprojects(res.data.projects)
+  })
+  .catch((err) => {
+    console.log(err)
+  })
+},[])
+
   return (
     <main className='p-4'>
-      <div className='projects'>
+      <div className='projects flex flex-wrap gap-5'>
         <button 
         onClick={() => setIsModalOpen(true)}
         className="project p-4 border border-slate-300 rounded-md">
         New project<i className="ri-link ms-2"></i>
         </button>
+
+
+        {
+          projects.map((project)=>(
+            <div onClick={()=>{navigate(`/project/`,{
+              state : {project}
+            })}} key={project._id} className="project flex flex-col items-center gap-2 p-4 border border-slate-300 rounded-md cursor-pointer min-w-44 hover:bg-slate-200">
+              <h2 className='font-semibold'>{project.name}</h2>
+              <div className='flex gap-2'>
+              <p><i className="ri-user-line"></i>Collaborators :</p>
+                {project.users.length}
+              </div>
+            </div>
+          ))
+        }
       </div>
 
       {isModalOpen && (
