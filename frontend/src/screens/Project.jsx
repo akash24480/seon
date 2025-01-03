@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom"
 import axios from '../config/axios'
 import { initializeSocket, receiveMessage, sendMessage } from "../config/scoket";
 import { UserContext } from "../context/user.context";
+import Markdown from 'markdown-to-jsx'
 
 const Project = () => {
   const location = useLocation();
@@ -13,6 +14,7 @@ const Project = () => {
   const [message, setMessage] = useState('')
   const { user } = useContext(UserContext)
   const messageBox = React.createRef()
+  const [messages, setMessages] = useState([]);
 
 
   const [users, setUsers] = useState([])
@@ -54,7 +56,7 @@ const Project = () => {
       sender: user
     })
 
-    appendOutgoingMessage(message)
+   setMessages(prevMessages => [...prevMessages, {message, sender: user}])
     setMessage("")
   }
 
@@ -65,8 +67,7 @@ const Project = () => {
     initializeSocket(project._id)
 
     receiveMessage('project-message', data => {
-      console.log(data)
-      appendInconmingMessage(data)
+      setMessages(prevMessages => [...prevMessages, data])
     })
 
     axios.get(`/projects/get-project/${location.state.project._id}`)
@@ -92,34 +93,7 @@ const Project = () => {
 
 
 
-  const appendInconmingMessage = (messageObject) => {
 
-    const messageBox = document.querySelector('.message-box')
-
-    const message = document.createElement('div')
-    message.classList.add('incoming', 'message', 'max-w-56', 'flex', 'flex-col', 'p-2', 'bg-slate-50', 'w-fit', 'rounded-lg')
-    message.innerHTML = `
-    <small class="opacity-65 text-xs">${messageObject.sender.email}</small>
-    <p class="text-sm">${messageObject.message}</p>
-    `
-
-    messageBox.appendChild(message)
-    scrollBottom()
-  }
-
-  const appendOutgoingMessage = (message) => {
-    const messageBox = document.querySelector('.message-box')
-
-    const newMessage = document.createElement('div')
-    newMessage.classList.add('ml-auto', 'message', 'max-w-56', 'flex', 'flex-col', 'p-2', 'bg-slate-50', 'w-fit', 'rounded-lg')
-    newMessage.innerHTML = `
-    <small class="opacity-65 text-xs">${user.email}</small>
-    <p class="text-sm">${message}</p>
-    `
-
-    messageBox.appendChild(newMessage)
-    scrollBottom()
-  }
 
 
   const scrollBottom = () =>{
@@ -150,6 +124,18 @@ const Project = () => {
         <div
           ref={messageBox}
           className="message-box flex-grow flex flex-col gap-2 p-1 overflow-y-auto overflow-x-hidden scrollbar-hide">
+            {messages.map((msg, index) => (
+        <div key={index} className={`${msg.sender._id === 'ai' ? 'max-w-80' : 'ml-auto'} incoming message max-w-96 flex flex-col p-2 bg-slate-50 w-fit rounded-lg`}>
+          <small className="opacity-65 text-xs">{msg.sender.email}</small>
+          <p className="text-sm">
+            {msg.sender._id === 'ai' ? 
+            <div className="overflow-auto bg-slate-950 text-white rounded-md p-2">
+              <Markdown>{msg.message}</Markdown> 
+            </div>
+            : msg.message}
+            </p>
+        </div>
+      ))}
         </div>
       </div>
 
