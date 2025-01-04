@@ -61,6 +61,17 @@ const Project = () => {
   }
 
 
+  function WriteAiMessage(message) {
+
+    const messageObject = JSON.parse(message)
+    return (
+      <div className="overflow-auto bg-slate-950 text-white rounded-md p-2">
+              <Markdown>{messageObject.text}</Markdown> 
+            </div>
+    )
+  }
+
+
   useEffect(() => {
 
 
@@ -125,16 +136,15 @@ const Project = () => {
           ref={messageBox}
           className="message-box flex-grow flex flex-col gap-2 p-1 overflow-y-auto overflow-x-hidden scrollbar-hide">
             {messages.map((msg, index) => (
-        <div key={index} className={`${msg.sender._id === 'ai' ? 'max-w-80' : 'ml-auto'} incoming message max-w-96 flex flex-col p-2 bg-slate-50 w-fit rounded-lg`}>
+        <div key={index} className={`${msg.sender._id === 'ai' ? 'max-w-80' : 'max-w-96'}  ${msg.sender._id == user._id.toString() && 'ml-auto'} incoming message  flex flex-col p-2 bg-slate-50 w-fit rounded-lg`}>
           <small className="opacity-65 text-xs">{msg.sender.email}</small>
           <p className="text-sm">
             {msg.sender._id === 'ai' ? 
-            <div className="overflow-auto bg-slate-950 text-white rounded-md p-2">
-              <Markdown>{msg.message}</Markdown> 
-            </div>
+            WriteAiMessage(msg.message)
             : msg.message}
             </p>
-        </div>
+          </div>
+        
       ))}
         </div>
       </div>
