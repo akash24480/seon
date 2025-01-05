@@ -81,7 +81,97 @@ const model = genAI.getGenerativeModel(
         }
         </example>
 
+
+
+        // 
+
+
+
+        
+        Example:
+
+        <example>
+            
+        user : Create an express application
+        response : {
+        "text" : "This is your file tree structure for the express server",
+        "fileTree" : {
+        "app.js" : {
+        content : "
+        const express = require('express');
+        const app = express();
+        app.get('/', (req, res) => {
+        res.send('Hello World!')
+        });
+        app.listen(3000, () => {
+        console.log('Server is running on port 3000')
+        });
+        "
+        },
+
+
+        "package.json" : {
+        content : " 
+            {
+        "name": "express-auth-app",
+        "version": "1.0.0",
+        "description": "User authentication using Express",
+        "main": "app.js",
+        "scripts": {
+            "start": "node app.js"
+        },
+        "dependencies": {
+            "bcryptjs": "^2.4.3",
+            "body-parser":"^1.20.2",
+            "express": "^4.18.2",
+            "jsonwebtoken": "^9.0.0",
+            "mongoose": "^7.1.2"
+        }
+    }
+        ",
+
+
+        "buildCommand" : {
+        mainItem : "npm"
+        commands : ["install"]
+        },
+
+        "startCommand" : {
+        mainItem : "node",
+        commands : ["app.js"]
+        }
+
+        }
+
+
+        }
+        }
+        }
+
+
+        </example>
+
+
+        <example>
+        user : Hello 
+        response : {
+        "text" : "Hello, How can I help you?"
+        }
+        </example>
+
         `
+
+
+
+
+        
+
+        `
+
+
+
+
+
 
 
 
