@@ -15,9 +15,22 @@ const Project = () => {
   const { user } = useContext(UserContext)
   const messageBox = React.createRef()
   const [messages, setMessages] = useState([]);
+  const [fileTree, setFileTree] = useState({
+    "app.js" :{
+      content : `const express = require('express');`
+    },
+    "package.json" : {
+      content : `
+      {
+        "name": "project", 
+      }
+      `
+    }
+  })
 
-
+  const [currentFile, setCurrentFile] = useState(null)
   const [users, setUsers] = useState([])
+  const [openFiles, setOpenFiles] =useState ([])
 
 
 
@@ -191,6 +204,66 @@ const Project = () => {
       </div>
     </div>
 
+  </section>
+
+
+  <section className="right bg-slate-950 flex-grow h-full flex">
+        <div className="explorer h-full max-w-64 bg-slate-700 p-2 min-w-52">
+          <div className="file-tree flex flex-col gap-2">
+            {
+              Object.keys(fileTree).map((file, indes) => (
+                <button onClick={()=>{
+                  setCurrentFile(file)
+                    setOpenFiles(prevOpenFiles => {
+                    const newOpenFiles = new Set(prevOpenFiles);
+                    newOpenFiles.add(file);
+                    return Array.from(newOpenFiles);
+                    })
+                }} className="tree-elements cursor-pointer p-2 flex items-center gap-2 bg-slate-200 w-full rounded-lg">
+              <p className="font-semibold text-lg">{file}</p>
+            </button>
+              ))
+            }
+          </div>
+        </div>
+        {currentFile && (
+        <div className="editor flex flex-col flex-grow h-full bg-slate-800 p-2">
+
+            
+
+          <div className="top p-2 flex gap-1">
+            {openFiles.map((file, index) => (
+              <button
+              onClick={()=> setCurrentFile(file)}
+              className={`open-file bg-slate-700 rounded-md cursor-pointer p-2 px-4 w-fit ${currentFile === file}`}
+              >
+                <p className="font-semibold text-white text-lg">{file}</p>
+              </button>
+            ))}
+
+          </div>
+          <div className="bottom h-full flex felx-grow">
+            {fileTree[currentFile] &&(
+              <textarea
+              value={fileTree[currentFile].content}
+              onChange={(e)=>{
+                setFileTree({
+                  ...fileTree,
+                  [currentFile]: {
+                    content: e.target.value
+                  }
+                })
+              }}
+              className="w-full h-full p-2 outline-none resize-none rounded-lg"
+              >
+
+              </textarea>
+            )}
+          </div>
+
+        
+        </div>
+      )}
   </section>
 
   {/* Modal section */}
