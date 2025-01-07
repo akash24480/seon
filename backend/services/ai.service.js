@@ -19,7 +19,8 @@ const model = genAI.getGenerativeModel(
         "text" : "This is your file tree structure for the express server",
         "fileTree" : {
         "app.js" : {
-        content : "
+        file : {
+        contents : "
         const express = require('express');
         const app = express();
         app.get('/', (req, res) => {
@@ -29,11 +30,14 @@ const model = genAI.getGenerativeModel(
         console.log('Server is running on port 3000')
         });
         "
+        }
         },
 
 
         "package.json" : {
-        content : " 
+        file : {
+        contents : " 
+        
             {
         "name": "express-auth-app",
         "version": "1.0.0",
@@ -50,10 +54,21 @@ const model = genAI.getGenerativeModel(
             "mongoose": "^7.1.2"
         }
     }
+
+}
         ",
 
 
-        "buildCommand" : {
+
+        }
+
+
+        },
+        
+
+
+        }
+                "buildCommand" : {
         mainItem : "npm"
         commands : ["install"]
         },
@@ -61,12 +76,6 @@ const model = genAI.getGenerativeModel(
         "startCommand" : {
         mainItem : "node",
         commands : ["app.js"]
-        }
-
-        }
-
-
-        }
         }
         }
 

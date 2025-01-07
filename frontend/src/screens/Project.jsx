@@ -4,6 +4,9 @@ import axios from '../config/axios'
 import { initializeSocket, receiveMessage, sendMessage } from "../config/scoket";
 import { UserContext } from "../context/user.context";
 import Markdown from 'markdown-to-jsx'
+import hljs from 'highlight.js'
+import 'highlight.js/styles/default.css';
+import { getWebContainer} from "../config/webContainer";
 
 const Project = () => {
   const location = useLocation();
@@ -15,22 +18,13 @@ const Project = () => {
   const { user } = useContext(UserContext)
   const messageBox = React.createRef()
   const [messages, setMessages] = useState([]);
-  const [fileTree, setFileTree] = useState({
-    "app.js" :{
-      content : `const express = require('express');`
-    },
-    "package.json" : {
-      content : `
-      {
-        "name": "project", 
-      }
-      `
-    }
-  })
+  const [fileTree, setFileTree] = useState({})
 
   const [currentFile, setCurrentFile] = useState(null)
   const [users, setUsers] = useState([])
   const [openFiles, setOpenFiles] =useState ([])
+
+  const [webContainer, setwebContainer] = useState(null)
 
 
 
@@ -90,7 +84,23 @@ const Project = () => {
 
     initializeSocket(project._id)
 
+    if(!webContainer){
+      getWebContainer().then(container => {
+        setwebContainer(container)
+        console.log("container started")
+      })
+    }
+
     receiveMessage('project-message', data => {
+      console.log(JSON.parse(data.message))
+      const message = JSON.parse(data.message)
+
+
+      webContainer?.mount(message.fileTree)
+
+      if(message.fileTree){
+        setFileTree(message.fileTree)
+      }
       setMessages(prevMessages => [...prevMessages, data])
     })
 
@@ -192,81 +202,83 @@ const Project = () => {
         {
           project.users && project.users.map((user) => {
             return (
-              <div className="user flex items-center gap-3 bg-slate-100 p-2 rounded-lg cursor-pointer  hover:bg-slate-200 transition-all">
-                <div className="aspect-square rounded-full w-fit h-fit flex items-center justify-center p-4 bg-slate-600">
-                  <i className="ri-user-fill absolute"></i>
-                </div>
-                <h2 className="font-semibold">{user.email}</h2>
+              <div className="user flex items-center gap-3 bg-slate-100 p-2 rounded-lg cursor-pointer hover:bg-slate-200 transition-all">
+              <div className="aspect-square rounded-full w-fit h-fit flex items-center justify-center p-4 bg-slate-600">
+                <i className="ri-user-fill absolute"></i>
+              </div>
+              <h2 className="font-semibold">{user.email}</h2>
               </div>
             )
-          })
-        }
-      </div>
-    </div>
+            })
+          }
+          </div>
+        </div>
 
-  </section>
+        </section>
 
-
-  <section className="right bg-slate-950 flex-grow h-full flex">
+        <section className="right bg-slate-950 flex-grow h-full flex">
         <div className="explorer h-full max-w-64 bg-slate-700 p-2 min-w-52">
           <div className="file-tree flex flex-col gap-2">
-            {
-              Object.keys(fileTree).map((file, indes) => (
-                <button onClick={()=>{
-                  setCurrentFile(file)
-                    setOpenFiles(prevOpenFiles => {
-                    const newOpenFiles = new Set(prevOpenFiles);
-                    newOpenFiles.add(file);
-                    return Array.from(newOpenFiles);
-                    })
-                }} className="tree-elements cursor-pointer p-2 flex items-center gap-2 bg-slate-200 w-full rounded-lg">
+          {
+            Object.keys(fileTree).map((file, index) => (
+            <button onClick={() => {
+              setCurrentFile(file)
+              setOpenFiles(prevOpenFiles => {
+              const newOpenFiles = new Set(prevOpenFiles);
+              newOpenFiles.add(file);
+              return Array.from(newOpenFiles);
+              })
+            }} className="tree-elements cursor-pointer p-2 flex items-center gap-2 bg-slate-200 w-full rounded-lg">
               <p className="font-semibold text-lg">{file}</p>
             </button>
-              ))
-            }
+            ))
+          }
           </div>
         </div>
         {currentFile && (
-        <div className="editor flex flex-col flex-grow h-full bg-slate-800 p-2">
-
-            
-
+          <div className="editor flex flex-col flex-grow h-full bg-slate-800 p-2">
           <div className="top p-2 flex gap-1">
             {openFiles.map((file, index) => (
-              <button
-              onClick={()=> setCurrentFile(file)}
+            <button
+              onClick={() => setCurrentFile(file)}
               className={`open-file bg-slate-700 rounded-md cursor-pointer p-2 px-4 w-fit ${currentFile === file}`}
-              >
-                <p className="font-semibold text-white text-lg">{file}</p>
-              </button>
+            >
+              <p className="font-semibold text-white text-lg">{file}</p>
+            </button>
             ))}
-
           </div>
-          <div className="bottom h-full flex felx-grow">
-            {fileTree[currentFile] &&(
-              <textarea
-              value={fileTree[currentFile].content}
-              onChange={(e)=>{
-                setFileTree({
-                  ...fileTree,
-                  [currentFile]: {
-                    content: e.target.value
-                  }
-                })
+          <div className="bottom h-full flex flex-grow">
+            {fileTree[currentFile] && (
+            <pre className="hljs w-full h-full p-2 outline-none resize-none rounded-lg">
+              <code
+                className="hljs h-full outline-none"
+                contentEditable
+                suppressContentEditableWarning
+                onBlur={(e)=>{
+                  const updatedContent = e.target.innerText;
+                  setFileTree(prevFileTree => ({
+                    ...prevFileTree,
+                    [currentFile]:{
+                      ...prevFileTree[currentFile],
+                      content:updatedContent
+                    }
+                  }))
+                }}
+              dangerouslySetInnerHTML={{
+                __html: hljs.highlight('javascript',fileTree[currentFile].file.contents).value,
               }}
-              className="w-full h-full p-2 outline-none resize-none rounded-lg"
-              >
-
-              </textarea>
+              style={{
+                whiteSpace:'pre-wrap',
+                paddingBottom:'25rem',
+                counterSet:'line-numbering'
+              }}
+              />
+            </pre>
             )}
           </div>
-
-        
-        </div>
-      )}
-  </section>
-
-  {/* Modal section */}
+          </div>
+        )}
+        </section>
 
   {isModalOpen && (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
